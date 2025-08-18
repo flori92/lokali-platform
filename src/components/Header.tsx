@@ -1,35 +1,36 @@
 import { Button } from "@/components/ui/button";
 import { Heart, Menu, User } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   return (
     <header className="w-full bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center space-x-2">
+        <Link to="/" className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-hero-gradient rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">S</span>
+            <span className="text-white font-bold text-lg">L</span>
           </div>
-          <span className="text-xl font-bold text-foreground">StayNest</span>
-        </div>
+          <span className="text-xl font-bold text-foreground">Lokali</span>
+        </Link>
 
         {/* Navigation - Hidden on mobile */}
         <nav className="hidden md:flex items-center space-x-8">
-          <a href="#" className="text-foreground hover:text-primary transition-colors">
-            Séjours
-          </a>
-          <a href="#" className="text-foreground hover:text-primary transition-colors">
-            Expériences
-          </a>
-          <a href="#" className="text-foreground hover:text-primary transition-colors">
+          <Link to="/" className="text-foreground hover:text-primary transition-colors">
+            Guest Houses
+          </Link>
+          <Link to="/" className="text-foreground hover:text-primary transition-colors">
+            Locations Longue Durée
+          </Link>
+          <Link to="/" className="text-foreground hover:text-primary transition-colors">
             Aide
-          </a>
+          </Link>
         </nav>
 
         {/* User actions */}
         <div className="flex items-center space-x-4">
           <Button variant="ghost" size="sm" className="hidden md:flex">
-            Mettre votre logement sur StayNest
+            Publier mon bien
           </Button>
           
           <Button variant="ghost" size="icon">

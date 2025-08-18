@@ -1,73 +1,72 @@
-# Welcome to your Lovable project
+# Lokali - Plateforme de Location Immobilière Béninoise
 
-## Project info
+## À propos du projet
 
-**URL**: https://lovable.dev/projects/fece9881-9b3d-4069-98a1-890405939def
+Lokali est une plateforme de location immobilière spécialement conçue pour le marché béninois. Elle propose deux types de services :
 
-## How can I edit this code?
+- **Guest Houses** : Hébergements de courte durée pour les visiteurs
+- **Locations Longue Durée** : Appartements vides que les locataires aménagent selon leurs goûts
 
-There are several ways of editing your application.
+## Fonctionnalités principales
 
-**Use Lovable**
+- Réservation directe sans intermédiaires
+- Paiements en FCFA (Franc CFA)
+- Interface en français
+- Filtres de recherche adaptés au marché local
+- Système de visites simplifiées
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/fece9881-9b3d-4069-98a1-890405939def) and start prompting.
+## Installation et développement
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Prérequis : Node.js et npm installés - [installer avec nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Cloner le repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Naviguer vers le dossier du projet
+cd lokali
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Installer les dépendances
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Démarrer le serveur de développement
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Technologies utilisées
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Ce projet utilise :
 
-**Use GitHub Codespaces**
+- **Vite** - Build tool rapide
+- **TypeScript** - Typage statique
+- **React** - Framework frontend
+- **shadcn-ui** - Composants UI
+- **Tailwind CSS** - Framework CSS
+- **React Router** - Navigation
+- **React Query** - Gestion des données
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Déploiement
 
-## What technologies are used for this project?
+Pour déployer l'application :
 
-This project is built with:
+```sh
+# Construire l'application
+npm run build
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+# Prévisualiser la version de production
+npm run preview
+```
 
-## How can I deploy this project?
+## Contribution
 
-Simply open [Lovable](https://lovable.dev/projects/fece9881-9b3d-4069-98a1-890405939def) and click on Share -> Publish.
+Pour contribuer au projet :
 
-## Can I connect a custom domain to my Lovable project?
+1. Forkez le repository
+2. Créez une branche pour votre fonctionnalité
+3. Commitez vos changements
+4. Poussez vers la branche
+5. Ouvrez une Pull Request
 
-Yes, you can!
+## Licence
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Ce projet est sous licence MIT.

@@ -1,5 +1,7 @@
 import { Heart, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PropertyType } from "@/types/property";
+import { Link } from "react-router-dom";
 
 interface PropertyCardProps {
   id: string;
@@ -10,11 +12,12 @@ interface PropertyCardProps {
   reviews: number;
   image: string;
   isLiked?: boolean;
+  type?: PropertyType;
 }
 
-const PropertyCard = ({ title, location, price, rating, reviews, image, isLiked = false }: PropertyCardProps) => {
+const PropertyCard = ({ id, title, location, price, rating, reviews, image, isLiked = false, type }: PropertyCardProps) => {
   return (
-    <div className="group cursor-pointer">
+    <Link to={`/property/${id}`} className="group cursor-pointer block">
       <div className="relative overflow-hidden rounded-lg aspect-square mb-3">
         <img 
           src={image} 
@@ -47,11 +50,13 @@ const PropertyCard = ({ title, location, price, rating, reviews, image, isLiked 
         <p className="text-muted-foreground">{location}</p>
         
         <div className="flex items-baseline space-x-1">
-          <span className="font-semibold text-foreground">{price}€</span>
-          <span className="text-muted-foreground text-sm">par nuit</span>
+          <span className="font-semibold text-foreground">{price.toLocaleString()} CFA</span>
+          <span className="text-muted-foreground text-sm">
+            {type === 'guest-house' ? 'par nuit' : 'par mois'}
+          </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
