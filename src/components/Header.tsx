@@ -16,10 +16,10 @@ const Header = () => {
 
         {/* Navigation - Hidden on mobile */}
         <nav className="hidden md:flex items-center space-x-8">
-          <Link to="/" className="text-foreground hover:text-primary transition-colors">
+          <Link to="/search?type=guest-house" className="text-foreground hover:text-primary transition-colors">
             Guest Houses
           </Link>
-          <Link to="/" className="text-foreground hover:text-primary transition-colors">
+          <Link to="/search?type=long-term-rental" className="text-foreground hover:text-primary transition-colors">
             Locations Longue Durée
           </Link>
           <Link to="/" className="text-foreground hover:text-primary transition-colors">
@@ -29,9 +29,11 @@ const Header = () => {
 
         {/* User actions */}
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm" className="hidden md:flex">
-            Publier mon bien
-          </Button>
+          <Link to="/publish" className="hidden md:flex">
+            <Button variant="ghost" size="sm">
+              Publier mon bien
+            </Button>
+          </Link>
           
           <Button variant="ghost" size="icon">
             <Heart className="h-5 w-5" />
