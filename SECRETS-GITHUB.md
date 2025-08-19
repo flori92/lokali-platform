@@ -12,22 +12,22 @@ Pour que le déploiement GitHub Pages fonctionne correctement, vous devez config
 
 #### VITE_SUPABASE_URL
 - **Nom** : `VITE_SUPABASE_URL`
-- **Valeur** : URL de votre projet Supabase (ex: `https://votre-projet.supabase.co`)
+- **Valeur** : `https://ubxbnrsflatmbnipqmah.supabase.co`
 - **Description** : URL de base de votre instance Supabase
 
 #### VITE_SUPABASE_ANON_KEY
 - **Nom** : `VITE_SUPABASE_ANON_KEY`
-- **Valeur** : Clé publique anonyme de Supabase
+- **Valeur** : `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVieGJucnNmbGF0bWJuaXBxbWFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1NDgwODQsImV4cCI6MjA3MTEyNDA4NH0._NAvgKso5MMBHg3ZsWLooxA_kR5VpVfwUJHNi6KTDVA`
 - **Description** : Clé d'API publique pour l'authentification côté client
 
 #### VITE_RESEND_API_KEY
 - **Nom** : `VITE_RESEND_API_KEY`
-- **Valeur** : Clé API Resend pour l'envoi d'emails
+- **Valeur** : `re_J4Mxa2S2_6AQaQKaQhNEqwo9TUDVZoXj2`
 - **Description** : Service d'envoi d'emails pour les notifications
 
 #### VITE_KKIAPAY_PUBLIC_KEY
 - **Nom** : `VITE_KKIAPAY_PUBLIC_KEY`
-- **Valeur** : Clé publique KKiaPay pour les paiements mobile money
+- **Valeur** : `4990916032a111f0a275d9450958fcf0`
 - **Description** : Intégration paiement mobile money (MTN, Moov, Orange)
 
 ## Instructions détaillées
