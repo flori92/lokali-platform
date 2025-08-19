@@ -10,13 +10,51 @@ export interface AuthUser {
   verified: boolean;
 }
 
+export interface AuthResponse {
+  success: boolean;
+  user?: AuthUser | null;
+  message?: string;
+  error?: string;
+}
+
 export class AuthService {
+  // Connexion avec Google OAuth
+  static async signInWithGoogle(): Promise<AuthResponse> {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return {
+        success: true,
+        message: 'Connexion Google initiée'
+      };
+    } catch (error) {
+      console.error('Erreur connexion Google:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur lors de la connexion Google'
+      };
+    }
+  }
+
   // Inscription avec email et mot de passe
   static async signUp(email: string, password: string, userData: {
     name: string;
-    phone: string;
+    phone?: string;
     role?: 'guest' | 'owner';
-  }) {
+  }): Promise<AuthResponse> {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -44,7 +82,18 @@ export class AuthService {
       });
     }
 
-    return data;
+    return {
+      success: true,
+      user: data.user ? {
+        id: data.user.id,
+        email: data.user.email!,
+        name: userData.name,
+        phone: userData.phone,
+        role: userData.role || 'guest',
+        verified: data.user.email_confirmed_at !== null
+      } : null,
+      message: 'Inscription réussie'
+    };
   }
 
   // Connexion avec email et mot de passe

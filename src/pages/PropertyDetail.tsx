@@ -1,11 +1,15 @@
-import { useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Users, Calendar, Phone, Mail, Star } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Star, MapPin, Users, Bed, Bath, Wifi, Car, Coffee, Tv, Phone, Mail } from 'lucide-react';
+import Header from '@/components/Header';
+import AvailabilityCalendar from '@/components/AvailabilityCalendar';
 
 const PropertyDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
   // Mock data - remplacer par un appel API réel
   const property = {
@@ -68,7 +72,7 @@ const PropertyDetail = () => {
                   <span>{property.bedrooms} chambres</span>
                 </div>
                 <div className="flex items-center">
-                  <Calendar className="h-5 w-5 mr-1 text-gray-500" />
+                  <Bath className="h-5 w-5 mr-1 text-gray-500" />
                   <span>{property.bathrooms} salles de bain</span>
                 </div>
                 <div className="flex items-center">
@@ -141,7 +145,11 @@ const PropertyDetail = () => {
                   </div>
                 </div>
 
-                <Button className="w-full mb-4">
+                <Button 
+                  size="lg" 
+                  className="flex-1"
+                  onClick={() => navigate(`/property/${id}/book`)}
+                >
                   Réserver maintenant
                 </Button>
 

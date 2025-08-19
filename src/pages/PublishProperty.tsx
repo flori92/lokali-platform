@@ -11,6 +11,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Upload, X, Plus, MapPin, Home, Euro, Camera, Check } from 'lucide-react';
 import { BENIN_CITIES, AMENITIES } from '@/constants/benin';
 import { PropertyType } from '@/types/property';
+import ImageUpload, { UploadedImage } from '@/components/ui/ImageUpload';
+import Header from '@/components/Header';
 
 const PublishProperty = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -25,7 +27,7 @@ const PublishProperty = () => {
     bathrooms: '',
     surface: '',
     amenities: [] as string[],
-    images: [] as File[],
+    images: [] as UploadedImage[],
     ownerName: '',
     ownerPhone: '',
     ownerEmail: '',
@@ -53,18 +55,10 @@ const PublishProperty = () => {
     }));
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
+  const handleImagesChange = (images: UploadedImage[]) => {
     setFormData(prev => ({
       ...prev,
-      images: [...prev.images, ...files].slice(0, 10) // Max 10 images
-    }));
-  };
-
-  const removeImage = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
+      images: images
     }));
   };
 
@@ -87,7 +81,9 @@ const PublishProperty = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="py-8">
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Header */}
         <div className="text-center mb-8">
@@ -355,61 +351,22 @@ const PublishProperty = () => {
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold">Photos de votre bien</h2>
                 
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    id="image-upload"
-                  />
-                  <Label htmlFor="image-upload" className="cursor-pointer">
-                    <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-lg font-medium text-gray-900 mb-2">
-                      Ajoutez vos photos
-                    </p>
-                    <p className="text-gray-600">
-                      Glissez-déposez ou cliquez pour sélectionner (max 10 photos)
-                    </p>
-                  </Label>
-                </div>
+                <ImageUpload
+                  onImagesChange={handleImagesChange}
+                  maxImages={10}
+                  folder="properties"
+                  className="w-full"
+                />
 
-                {formData.images.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {formData.images.map((image, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={URL.createObjectURL(image)}
-                          alt={`Photo ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg"
-                        />
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => removeImage(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                        {index === 0 && (
-                          <Badge className="absolute bottom-2 left-2">
-                            Photo principale
-                          </Badge>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <Card className="bg-green-50 border-green-200">
+                <Card className="bg-blue-50 border-blue-200">
                   <CardContent className="p-4">
-                    <h3 className="font-semibold text-green-900 mb-2">📸 Conseils photos</h3>
-                    <ul className="text-sm text-green-800 space-y-1">
-                      <li>• Prenez des photos en pleine lumière naturelle</li>
+                    <h3 className="font-semibold text-blue-900 mb-2">📸 Conseils photos</h3>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                      <li>• Prenez des photos avec une bonne luminosité naturelle</li>
                       <li>• Montrez toutes les pièces principales</li>
-                      <li>• Incluez l'extérieur et les équipements</li>
-                      <li>• Évitez les photos floues ou sombres</li>
+                      <li>• Mettez en valeur les équipements et espaces</li>
+                      <li>• La première photo sera votre photo de couverture</li>
+                      <li>• Évitez les photos floues ou mal cadrées</li>
                     </ul>
                   </CardContent>
                 </Card>
@@ -505,6 +462,7 @@ const PublishProperty = () => {
             </div>
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   );

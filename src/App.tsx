@@ -13,6 +13,8 @@ import PublishProperty from './pages/PublishProperty';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
+import Booking from './pages/Booking';
+import AuthCallback from './pages/AuthCallback';
 
 const queryClient = new QueryClient();
 
@@ -27,15 +29,13 @@ function App() {
             <ErrorBoundary>
               <Routes>
                 <Route path="/" element={<Index />} />
-                <Route path="/property/:id" element={<PropertyDetail />} />
                 <Route path="/search" element={<SearchResults />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
+                <Route path="/property/:id" element={<PropertyDetail />} />
                 <Route 
-                  path="/profile" 
+                  path="/property/:id/book" 
                   element={
                     <ProtectedRoute>
-                      <Profile />
+                      <Booking />
                     </ProtectedRoute>
                   } 
                 />
@@ -44,6 +44,17 @@ function App() {
                   element={
                     <ProtectedRoute requireRole="owner">
                       <PublishProperty />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route 
+                  path="/profile" 
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
                     </ProtectedRoute>
                   } 
                 />

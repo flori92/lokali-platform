@@ -89,6 +89,25 @@ export class BookingService {
     return (data || []).map(booking => this.transformBooking(booking));
   }
 
+  // Obtenir les réservations d'une propriété
+  static async getPropertyBookings(propertyId: string): Promise<Booking[]> {
+    const { data, error } = await supabase
+      .from('bookings')
+      .select(`
+        *,
+        property:properties(*),
+        guest:users(*)
+      `)
+      .eq('property_id', propertyId)
+      .order('check_in', { ascending: true });
+
+    if (error) {
+      throw new Error(`Erreur lors de la récupération des réservations: ${error.message}`);
+    }
+
+    return data?.map(this.transformBooking) || [];
+  }
+
   // Obtenir les réservations pour les propriétés d'un propriétaire
   static async getOwnerBookings(ownerId: string) {
     const { data, error } = await supabase

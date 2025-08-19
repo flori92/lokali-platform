@@ -6,10 +6,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Eye, EyeOff, UserPlus } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { Loader2, UserPlus } from 'lucide-react';
+import { AuthService } from '@/services/authService';
 import Header from '@/components/Header';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
+import { Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Register = () => {
   const [formData, setFormData] = useState({
