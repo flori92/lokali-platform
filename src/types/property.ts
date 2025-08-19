@@ -48,6 +48,14 @@ export interface Property {
   updatedAt: Date;
 }
 
+export type SortOption = 
+  | 'relevance'
+  | 'price-low'
+  | 'price-high'
+  | 'rating'
+  | 'newest'
+  | 'oldest';
+
 export interface SearchFilters {
   type?: PropertyType;
   city?: string;
@@ -63,6 +71,7 @@ export interface SearchFilters {
   parking?: boolean;
   availableFrom?: Date;
   minimumStay?: number;
+  sortBy?: SortOption;
 }
 
 export interface Booking {

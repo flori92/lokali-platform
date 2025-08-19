@@ -174,7 +174,8 @@ const SearchResults = () => {
   const searchFilters: SearchFilters = {
     type: propertyType === 'all' ? undefined : propertyType as 'guest-house' | 'long-term-rental',
     city: city || undefined,
-    priceRange: (min || max) ? { min, max } : undefined
+    priceRange: (min || max) ? { min, max } : undefined,
+    sortBy: sortBy as 'relevance' | 'price-low' | 'price-high' | 'rating' | 'newest' | 'oldest'
   };
 
   // Requête API avec React Query
@@ -194,7 +195,11 @@ const SearchResults = () => {
     rating: property.rating?.average || 0,
     reviews: property.rating?.count || 0,
     images: property.images,
-    type: property.type
+    type: property.type,
+    bedrooms: property.specifications.bedrooms,
+    bathrooms: property.specifications.bathrooms,
+    amenities: property.amenities,
+    owner: property.owner
   }));
 
   // Utiliser les données API ou fallback sur les données mockées
@@ -208,29 +213,8 @@ const SearchResults = () => {
 
   const handleSort = (value: string) => {
     setSortBy(value);
-    // Le tri sera géré côté API dans une version future
-  };
-    
-    switch (value) {
-      case 'price-low':
-        sorted.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high':
-        sorted.sort((a, b) => b.price - a.price);
-        break;
-      case 'rating':
-        sorted.sort((a, b) => b.rating - a.rating);
-        break;
-      case 'newest':
-        // Tri par ID décroissant (simule les plus récents)
-        sorted.sort((a, b) => b.id.localeCompare(a.id));
-        break;
-      default:
-        // Relevance - garde l'ordre original
-        break;
-    }
-    
-    setFilteredProperties(sorted);
+    // Le tri est maintenant géré côté API via searchFilters
+    // React Query se rechargera automatiquement avec les nouveaux filtres
   };
 
   return (

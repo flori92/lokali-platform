@@ -1,5 +1,88 @@
 import { supabase } from '@/lib/supabase';
-import { Property, SearchFilters } from '@/types/property';
+import { Property, SearchFilters, PropertyType, SortOption } from '@/types/property';
+
+interface DbProperty {
+  id: string;
+  title: string;
+  description: string;
+  type: PropertyType;
+  city: string;
+  district: string;
+  address: string;
+  latitude?: number;
+  longitude?: number;
+  price_amount: number;
+  price_currency: string;
+  price_period: 'night' | 'month' | 'year';
+  images: string[];
+  amenities: string[];
+  bedrooms: number;
+  bathrooms: number;
+  area: number;
+  furnished: boolean;
+  parking: boolean;
+  available: boolean;
+  available_from?: string;
+  minimum_stay?: number;
+  owner_id: string;
+  rating_average?: number;
+  rating_count?: number;
+  created_at: string;
+  updated_at: string;
+  users?: {
+    id: string;
+    name: string;
+    phone: string;
+    email: string;
+    verified: boolean;
+  };
+}
+
+interface PropertyCreateData {
+  title: string;
+  description: string;
+  type: PropertyType;
+  city: string;
+  district: string;
+  address: string;
+  latitude?: number;
+  longitude?: number;
+  price_amount: number;
+  price_period: 'night' | 'month' | 'year';
+  images: string[];
+  amenities: string[];
+  bedrooms: number;
+  bathrooms: number;
+  area: number;
+  furnished: boolean;
+  parking: boolean;
+  available: boolean;
+  available_from?: string;
+  minimum_stay?: number;
+}
+
+interface PropertyUpdateData {
+  title?: string;
+  description?: string;
+  type?: PropertyType;
+  city?: string;
+  district?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  price_amount?: number;
+  price_period?: 'night' | 'month' | 'year';
+  images?: string[];
+  amenities?: string[];
+  bedrooms?: number;
+  bathrooms?: number;
+  area?: number;
+  furnished?: boolean;
+  parking?: boolean;
+  available?: boolean;
+  available_from?: string;
+  minimum_stay?: number;
+}
 
 export class PropertyService {
   // Rechercher des propriétés avec filtres
@@ -15,7 +98,7 @@ export class PropertyService {
       .eq('available', true);
 
     // Filtres par type
-    if (filters.type && filters.type !== 'all') {
+    if (filters.type) {
       query = query.eq('type', filters.type);
     }
 
@@ -62,9 +145,8 @@ export class PropertyService {
       query = query.eq('parking', filters.parking);
     }
 
-    // Tri par défaut par note puis par prix
-    query = query.order('rating_average', { ascending: false, nullsLast: true })
-                 .order('price_amount', { ascending: true });
+    // Application du tri selon les critères
+    query = this.applySorting(query, filters.sortBy || 'relevance');
 
     const { data, error } = await query;
 
@@ -98,7 +180,7 @@ export class PropertyService {
   }
 
   // Créer une nouvelle propriété
-  static async createProperty(propertyData: any, ownerId: string) {
+  static async createProperty(propertyData: PropertyCreateData, ownerId: string) {
     const { data, error } = await supabase
       .from('properties')
       .insert({
@@ -118,7 +200,7 @@ export class PropertyService {
   }
 
   // Mettre à jour une propriété
-  static async updateProperty(id: string, propertyData: any) {
+  static async updateProperty(id: string, propertyData: PropertyUpdateData) {
     const { data, error } = await supabase
       .from('properties')
       .update(propertyData)
@@ -148,7 +230,7 @@ export class PropertyService {
   }
 
   // Transformer les données de la base vers le format Property
-  private static transformProperty(dbProperty: any): Property {
+  private static transformProperty(dbProperty: DbProperty): Property {
     return {
       id: dbProperty.id,
       title: dbProperty.title,
@@ -165,7 +247,7 @@ export class PropertyService {
       },
       price: {
         amount: dbProperty.price_amount,
-        currency: dbProperty.price_currency || 'FCFA',
+        currency: 'FCFA' as const,
         period: dbProperty.price_period
       },
       images: dbProperty.images || [],
@@ -198,7 +280,38 @@ export class PropertyService {
     };
   }
 
-  private static transformProperties(dbProperties: any[]): Property[] {
+  private static transformProperties(dbProperties: DbProperty[]): Property[] {
     return dbProperties.map(property => this.transformProperty(property));
+  }
+
+  // Appliquer le tri selon les critères sélectionnés
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private static applySorting(query: any, sortBy: SortOption) {
+    switch (sortBy) {
+      case 'price-low':
+        return query.order('price_amount', { ascending: true });
+      
+      case 'price-high':
+        return query.order('price_amount', { ascending: false });
+      
+      case 'rating':
+        return query
+          .order('rating_average', { ascending: false, nullsFirst: false })
+          .order('rating_count', { ascending: false, nullsFirst: false });
+      
+      case 'newest':
+        return query.order('created_at', { ascending: false });
+      
+      case 'oldest':
+        return query.order('created_at', { ascending: true });
+      
+      case 'relevance':
+      default:
+        // Tri par pertinence : note puis prix puis date
+        return query
+          .order('rating_average', { ascending: false, nullsFirst: false })
+          .order('price_amount', { ascending: true })
+          .order('created_at', { ascending: false });
+    }
   }
 }

@@ -1,6 +1,16 @@
 import { supabase } from '@/lib/supabase';
 import { User } from '@/types/property';
 
+interface DbUser {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: 'guest' | 'owner' | 'admin';
+  verified: boolean;
+  created_at: string;
+}
+
 export class UserService {
   // Créer un nouvel utilisateur
   static async createUser(userData: {
@@ -96,7 +106,7 @@ export class UserService {
   }
 
   // Transformer les données de la base vers le format User
-  private static transformUser(dbUser: any): User {
+  private static transformUser(dbUser: DbUser): User {
     return {
       id: dbUser.id,
       name: dbUser.name,

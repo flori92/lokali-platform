@@ -1,6 +1,36 @@
 import { supabase } from '@/lib/supabase';
 import { Booking } from '@/types/property';
 
+interface DbBooking {
+  id: string;
+  property_id: string;
+  guest_id: string;
+  check_in: string;
+  check_out: string;
+  total_price: number;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  payment_status: 'pending' | 'paid' | 'refunded';
+  guest_name: string;
+  guest_phone: string;
+  guest_email: string;
+  number_of_guests?: number;
+  created_at: string;
+  properties?: {
+    id: string;
+    title: string;
+    city: string;
+    district: string;
+    images: string[];
+    owner_id?: string;
+  };
+  users?: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+  };
+}
+
 export class BookingService {
   // Créer une nouvelle réservation
   static async createBooking(bookingData: {
@@ -110,7 +140,7 @@ export class BookingService {
     status: 'pending' | 'confirmed' | 'cancelled' | 'completed',
     paymentStatus?: 'pending' | 'paid' | 'refunded'
   ) {
-    const updateData: any = { status };
+    const updateData: { status: string; payment_status?: string } = { status };
     if (paymentStatus) {
       updateData.payment_status = paymentStatus;
     }
@@ -161,22 +191,25 @@ export class BookingService {
     const diffTime = Math.abs(checkOut.getTime() - checkIn.getTime());
     
     switch (period) {
-      case 'night':
+      case 'night': {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         return diffDays * pricePerPeriod;
-      case 'month':
+      }
+      case 'month': {
         const diffMonths = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 30));
         return diffMonths * pricePerPeriod;
-      case 'year':
+      }
+      case 'year': {
         const diffYears = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 365));
         return diffYears * pricePerPeriod;
+      }
       default:
         return pricePerPeriod;
     }
   }
 
   // Transformer les données de la base vers le format Booking
-  private static transformBooking(dbBooking: any): Booking {
+  private static transformBooking(dbBooking: DbBooking): Booking {
     return {
       id: dbBooking.id,
       propertyId: dbBooking.property_id,
