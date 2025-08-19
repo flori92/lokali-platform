@@ -4,7 +4,9 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { PropertyService } from '@/services/propertyService';
 import { BookingService } from '@/services/bookingService';
+import { RevenueService, RevenueStats } from '@/services/revenueService';
 import { Property, Booking } from '@/types/property';
+import RevenueChart from '@/components/RevenueChart';
 import Header from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,7 +20,9 @@ import {
   Eye, 
   Plus,
   Edit,
-  Trash2
+  Trash2,
+  Download,
+  BarChart3
 } from 'lucide-react';
 
 interface DashboardStats {
@@ -50,6 +54,13 @@ const Dashboard: React.FC = () => {
     enabled: !!user?.id
   });
 
+  // Récupération des statistiques de revenus
+  const { data: revenueStats, isLoading: revenueLoading } = useQuery({
+    queryKey: ['revenue-stats', user?.id],
+    queryFn: () => RevenueService.getRevenueStats(user?.id || ''),
+    enabled: !!user?.id
+  });
+
   // Calcul des statistiques
   const stats: DashboardStats = {
     totalProperties: properties.length,
@@ -78,6 +89,21 @@ const Dashboard: React.FC = () => {
       window.location.reload();
     } catch (error) {
       console.error('Erreur mise à jour réservation:', error);
+    }
+  };
+
+  const handleExportRevenue = async () => {
+    if (!user?.id || !revenueStats) return;
+    
+    try {
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setFullYear(startDate.getFullYear() - 1);
+      
+      const exportData = await RevenueService.prepareExportData(user.id, startDate, endDate);
+      RevenueService.downloadCSVReport(exportData, `rapport-lokali-${new Date().toISOString().split('T')[0]}.csv`);
+    } catch (error) {
+      console.error('Erreur export revenus:', error);
     }
   };
 
@@ -115,10 +141,11 @@ const Dashboard: React.FC = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
             <TabsTrigger value="properties">Mes biens</TabsTrigger>
             <TabsTrigger value="bookings">Réservations</TabsTrigger>
+            <TabsTrigger value="revenue">Revenus</TabsTrigger>
           </TabsList>
 
           {/* Vue d'ensemble */}
@@ -440,6 +467,31 @@ const Dashboard: React.FC = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Onglet Revenus */}
+          <TabsContent value="revenue" className="space-y-6">
+            {revenueStats ? (
+              <RevenueChart 
+                stats={revenueStats} 
+                onExport={handleExportRevenue}
+                loading={revenueLoading}
+              />
+            ) : (
+              <Card>
+                <CardContent className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Chargement des données financières...
+                    </h3>
+                    <p className="text-gray-600">
+                      Analyse de vos revenus en cours
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
