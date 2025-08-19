@@ -159,7 +159,7 @@ const SAMPLE_PROPERTIES: SimpleProperty[] = [
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [sortBy, setSortBy] = useState('price');
+  const [sortBy, setSortBy] = useState<'relevance' | 'price-low' | 'price-high' | 'rating' | 'newest' | 'oldest'>('relevance');
   const [showFilters, setShowFilters] = useState(false);
 
   // Récupération des paramètres de recherche depuis l'URL
@@ -174,8 +174,8 @@ const SearchResults = () => {
   const searchFilters: SearchFilters = {
     type: propertyType === 'all' ? undefined : propertyType as 'guest-house' | 'long-term-rental',
     city: city || undefined,
-    priceRange: (min || max) ? { min, max } : undefined,
-    sortBy: sortBy as 'relevance' | 'price-low' | 'price-high' | 'rating' | 'newest' | 'oldest'
+    priceRange: (typeof min === 'number' && !Number.isNaN(min) && typeof max === 'number' && !Number.isNaN(max)) ? { min, max } : undefined,
+    sortBy
   };
 
   // Requête API avec React Query
@@ -211,7 +211,7 @@ const SearchResults = () => {
     return true;
   });
 
-  const handleSort = (value: string) => {
+  const handleSort = (value: 'relevance' | 'price-low' | 'price-high' | 'rating' | 'newest' | 'oldest') => {
     setSortBy(value);
     // Le tri est maintenant géré côté API via searchFilters
     // React Query se rechargera automatiquement avec les nouveaux filtres
@@ -253,6 +253,7 @@ const SearchResults = () => {
                 <SelectItem value="price-high">Prix décroissant</SelectItem>
                 <SelectItem value="rating">Mieux notés</SelectItem>
                 <SelectItem value="newest">Plus récents</SelectItem>
+                <SelectItem value="oldest">Plus anciens</SelectItem>
               </SelectContent>
             </Select>
 
