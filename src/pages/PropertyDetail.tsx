@@ -7,6 +7,7 @@ import { Star, MapPin, Users, Bed, Bath, Wifi, Car, Coffee, Tv, Phone, Mail, Mes
 import Header from '@/components/Header';
 import AvailabilityCalendar from '@/components/AvailabilityCalendar';
 import MessageSystem from '@/components/MessageSystem';
+import MediaGallery, { MediaItem } from '@/components/MediaGallery';
 import { useAuth } from '@/contexts/AuthContext';
 
 const PropertyDetail = () => {
@@ -38,22 +39,57 @@ const PropertyDetail = () => {
     }
   };
 
+  // Données média avec images et vidéos
+  const mediaItems: MediaItem[] = [
+    {
+      id: '1',
+      type: 'image',
+      url: '/src/assets/property-1.jpg',
+      title: 'Vue principale'
+    },
+    {
+      id: '2',
+      type: 'image',
+      url: '/src/assets/property-2.jpg',
+      title: 'Salon'
+    },
+    {
+      id: '3',
+      type: 'video',
+      url: '/src/assets/property-video-1.mp4',
+      thumbnail: '/src/assets/property-1.jpg',
+      title: 'Visite virtuelle',
+      duration: 95 // 1min35s
+    },
+    {
+      id: '4',
+      type: 'image',
+      url: '/src/assets/hero-image.jpg',
+      title: 'Piscine'
+    },
+    {
+      id: '5',
+      type: 'video',
+      url: '/src/assets/property-video-2.mp4',
+      thumbnail: '/src/assets/property-2.jpg',
+      title: 'Présentation des chambres',
+      duration: 78 // 1min18s
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Images et infos principales */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden">
-              <img
-                src={property.images[0]}
-                alt={property.title}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = '/placeholder.svg';
-                }}
-              />
-            </div>
+            {/* Galerie média avec photos et vidéos */}
+            <MediaGallery 
+              media={mediaItems}
+              showThumbnails={true}
+              allowDownload={false}
+              className="w-full"
+            />
 
             <div>
               <div className="flex items-center justify-between mb-4">

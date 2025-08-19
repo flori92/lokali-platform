@@ -12,6 +12,7 @@ import { Upload, X, Plus, MapPin, Home, Euro, Camera, Check } from 'lucide-react
 import { BENIN_CITIES, AMENITIES } from '@/constants/benin';
 import { PropertyType } from '@/types/property';
 import ImageUpload, { UploadedImage } from '@/components/ui/ImageUpload';
+import VideoUpload from '@/components/ui/VideoUpload';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import Header from '@/components/Header';
 
@@ -30,6 +31,7 @@ const PublishProperty = () => {
     surface: '',
     amenities: [] as string[],
     images: [] as UploadedImage[],
+    videos: [] as string[],
     ownerName: '',
     ownerPhone: '',
     ownerEmail: '',
@@ -69,6 +71,13 @@ const PublishProperty = () => {
     setFormData(prev => ({
       ...prev,
       images: images
+    }));
+  };
+
+  const handleVideosChange = (videos: string[]) => {
+    setFormData(prev => ({
+      ...prev,
+      videos: videos
     }));
   };
 
@@ -362,29 +371,65 @@ const PublishProperty = () => {
               </div>
             )}
 
-            {/* Étape 4: Photos */}
+            {/* Étape 4: Photos et Vidéos */}
             {currentStep === 4 && (
               <div className="space-y-6">
-                <h2 className="text-xl font-semibold">Photos de votre bien</h2>
-                <ImageUpload
-                  images={formData.images}
-                  onImagesChange={handleImagesChange}
-                  maxImages={10}
-                  propertyId={propertyType}
-                  enableRealUpload={false}
-                  className="w-full"
-                />
+                <h2 className="text-xl font-semibold">Photos et vidéos de votre bien</h2>
+                
+                {/* Section Photos */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Photos</h3>
+                  <ImageUpload
+                    images={formData.images}
+                    onImagesChange={handleImagesChange}
+                    maxImages={10}
+                    propertyId={propertyType}
+                    enableRealUpload={false}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Section Vidéos */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Vidéos de présentation</h3>
+                  <p className="text-sm text-gray-600">
+                    Ajoutez des vidéos pour montrer votre bien sous tous les angles. 
+                    Les vidéos permettent aux locataires de mieux évaluer la propriété.
+                  </p>
+                  <VideoUpload
+                    propertyId={propertyType}
+                    maxVideos={3}
+                    onVideosChange={handleVideosChange}
+                    className="w-full"
+                  />
+                </div>
 
                 <Card className="bg-blue-50 border-blue-200">
                   <CardContent className="p-4">
-                    <h3 className="font-semibold text-blue-900 mb-2">📸 Conseils photos</h3>
-                    <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Prenez des photos avec une bonne luminosité naturelle</li>
-                      <li>• Montrez toutes les pièces principales</li>
-                      <li>• Mettez en valeur les équipements et espaces</li>
-                      <li>• La première photo sera votre photo de couverture</li>
-                      <li>• Évitez les photos floues ou mal cadrées</li>
-                    </ul>
+                    <h3 className="font-semibold text-blue-900 mb-2">📸 Conseils photos et vidéos</h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <h4 className="font-medium text-blue-900 mb-1">Photos</h4>
+                        <ul className="text-sm text-blue-800 space-y-1">
+                          <li>• Prenez des photos avec une bonne luminosité naturelle</li>
+                          <li>• Montrez toutes les pièces principales</li>
+                          <li>• Mettez en valeur les équipements et espaces</li>
+                          <li>• La première photo sera votre photo de couverture</li>
+                          <li>• Évitez les photos floues ou mal cadrées</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-blue-900 mb-1">Vidéos</h4>
+                        <ul className="text-sm text-blue-800 space-y-1">
+                          <li>• Durée maximum: 2 minutes par vidéo</li>
+                          <li>• Filmez en mode paysage (horizontal)</li>
+                          <li>• Faites une visite guidée fluide</li>
+                          <li>• Montrez l'état réel du bien</li>
+                          <li>• Évitez les mouvements brusques</li>
+                          <li>• Bonne qualité audio si vous commentez</li>
+                        </ul>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -439,47 +484,35 @@ const PublishProperty = () => {
                 </Card>
 
                 {/* Résumé */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Résumé de votre annonce</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
+                <Card className="bg-green-50 border-green-200">
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-green-900 mb-2">✅ Récapitulatif</h3>
+                    <div className="text-sm text-green-800 space-y-2">
                       <p><strong>Type:</strong> {propertyType === 'guest-house' ? 'Guest House' : 'Location Longue Durée'}</p>
                       <p><strong>Titre:</strong> {formData.title || 'Non renseigné'}</p>
-                      <p><strong>Localisation:</strong> {formData.location}, {formData.city}</p>
-                      <p><strong>Prix:</strong> {formData.price ? `${parseInt(formData.price).toLocaleString()} CFA` : 'Non renseigné'} {propertyType === 'guest-house' ? 'par nuit' : 'par mois'}</p>
-                      <p><strong>Chambres:</strong> {formData.bedrooms || 'Non renseigné'}</p>
-                      <p><strong>Photos:</strong> {formData.images.length} ajoutée{formData.images.length > 1 ? 's' : ''}</p>
+                      <p><strong>Localisation:</strong> {formData.location || 'Non renseignée'}</p>
+                      <p><strong>Prix:</strong> {formData.price ? `${formData.price} FCFA` : 'Non renseigné'}</p>
+                      <p><strong>Photos:</strong> {formData.images.length} image(s)</p>
+                      <p><strong>Vidéos:</strong> {formData.videos.length} vidéo(s)</p>
                     </div>
                   </CardContent>
                 </Card>
+
+                <Button 
+                  size="lg" 
+                  className="w-full"
+                  onClick={() => {
+                    // Ici on traiterait la soumission du formulaire
+                    alert('Propriété publiée avec succès ! (Fonctionnalité en développement)');
+                  }}
+                >
+                  Publier ma propriété
+                </Button>
               </div>
             )}
-
-            {/* Navigation */}
-            <div className="flex justify-between mt-8 pt-6 border-t">
-              <Button
-                variant="outline"
-                onClick={prevStep}
-                disabled={currentStep === 1}
-              >
-                Précédent
-              </Button>
-
-              {currentStep < steps.length ? (
-                <Button onClick={nextStep}>
-                  Suivant
-                </Button>
-              ) : (
-                <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700">
-                  Publier mon bien
-                </Button>
-              )}
-            </div>
           </CardContent>
         </Card>
-      </div>
+        </div>
       </div>
     </div>
   );
