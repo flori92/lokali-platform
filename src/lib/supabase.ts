@@ -1,10 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
-import { Database } from '@/types/database';
 
-const supabaseUrl = 'https://ubxbnrsflatmbnipqmah.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVieGJucnNmbGF0bWJuaXBxbWFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc0NTQ0NjAsImV4cCI6MjA1MzAzMDQ2MH0.X8kGbEQKZyQBvJgJvJgJvJgJvJgJvJgJvJgJvJgJvJg';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Variables d\'environnement Supabase manquantes');
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+});
 
 // Configuration pour la connexion directe PostgreSQL
 export const DATABASE_CONFIG = {
