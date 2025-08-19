@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Star, Heart, Filter, Grid, List, SlidersHorizontal } from 'lucide-react';
-import PropertyCard from '@/components/PropertyCard';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Grid, List, SlidersHorizontal, MapPin, Star, Heart } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
+import PropertyCard from '@/components/PropertyCard';
+import { PropertyService } from '@/services/propertyService';
+import { Property, SearchFilters } from '@/types/property';
 
 type SimpleProperty = {
   id: string;
@@ -156,36 +159,57 @@ const SAMPLE_PROPERTIES: SimpleProperty[] = [
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [sortBy, setSortBy] = useState('relevance');
+  const [sortBy, setSortBy] = useState('price');
   const [showFilters, setShowFilters] = useState(false);
-  const [filteredProperties, setFilteredProperties] = useState(SAMPLE_PROPERTIES);
 
+  // Récupération des paramètres de recherche depuis l'URL
   const propertyType = searchParams.get('type') || 'all';
   const city = searchParams.get('city') || '';
   const minParam = searchParams.get('min');
   const maxParam = searchParams.get('max');
-  const fromParam = searchParams.get('from');
-  const toParam = searchParams.get('to');
-  const guestsParam = searchParams.get('guests');
-  const durationParam = searchParams.get('duration');
-
   const min = minParam ? Number(minParam) : undefined;
   const max = maxParam ? Number(maxParam) : undefined;
 
-  // Filtrage des propriétés
-  const displayedProperties = filteredProperties.filter(property => {
+  // Construction des filtres pour l'API
+  const searchFilters: SearchFilters = {
+    type: propertyType === 'all' ? undefined : propertyType as 'guest-house' | 'long-term-rental',
+    city: city || undefined,
+    priceRange: (min || max) ? { min, max } : undefined
+  };
+
+  // Requête API avec React Query
+  const { data: properties = [], isLoading, error } = useQuery({
+    queryKey: ['properties', searchFilters],
+    queryFn: () => PropertyService.searchProperties(searchFilters),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Transformation des propriétés API vers le format d'affichage
+  const transformedProperties = properties.map(property => ({
+    id: property.id,
+    title: property.title,
+    description: property.description,
+    location: `${property.location.district}, ${property.location.city}`,
+    price: property.price.amount,
+    rating: property.rating?.average || 0,
+    reviews: property.rating?.count || 0,
+    images: property.images,
+    type: property.type
+  }));
+
+  // Utiliser les données API ou fallback sur les données mockées
+  const displayedProperties = properties.length > 0 ? transformedProperties : SAMPLE_PROPERTIES.filter(property => {
     if (propertyType !== 'all' && property.type !== propertyType) return false;
     if (city && !property.location.toLowerCase().includes(city.toLowerCase())) return false;
     if (typeof min === 'number' && !Number.isNaN(min) && property.price < min) return false;
     if (typeof max === 'number' && !Number.isNaN(max) && property.price > max) return false;
-    // Placeholders pour dates/capacité sans données backend: on n'applique pas de filtre strict
-    // fromParam, toParam, guestsParam, durationParam sont lus pour deep-linking mais non contraignants ici
     return true;
   });
 
   const handleSort = (value: string) => {
     setSortBy(value);
-    const sorted = [...filteredProperties];
+    // Le tri sera géré côté API dans une version future
+  };
     
     switch (value) {
       case 'price-low':
