@@ -7,7 +7,7 @@ import compression from 'vite-plugin-compression'
 // https://vitejs.dev/config/
 export default defineConfig({
   // Configuration pour GitHub Pages
-  base: process.env.NODE_ENV === 'production' ? '/stay-local-rent-easy/' : '/',
+  base: process.env.NODE_ENV === 'production' ? '/lokali-platform/' : '/',
   plugins: [
     react(),
     // Analyse du bundle
