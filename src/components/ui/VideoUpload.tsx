@@ -47,6 +47,38 @@ const VideoUpload: React.FC<VideoUploadProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Mettre à jour le statut d'une vidéo
+  const updateVideoStatus = useCallback((
+    id: string, 
+    status: VideoFile['status'], 
+    progress: number, 
+    error?: string
+  ) => {
+    setVideos(prev => prev.map(video => 
+      video.id === id 
+        ? { ...video, status, progress, error }
+        : video
+    ));
+  }, []);
+
+  // Mettre à jour la miniature et durée
+  const updateVideoThumbnail = useCallback((id: string, thumbnail: string, duration?: number) => {
+    setVideos(prev => prev.map(video => 
+      video.id === id 
+        ? { ...video, thumbnail, duration }
+        : video
+    ));
+  }, []);
+
+  // Mettre à jour l'URL de la vidéo
+  const updateVideoUrl = useCallback((id: string, url: string) => {
+    setVideos(prev => prev.map(video => 
+      video.id === id 
+        ? { ...video, url }
+        : video
+    ));
+  }, []);
+
   // Traiter une vidéo (validation + upload)
   const processVideo = useCallback(async (video: VideoFile) => {
     try {
@@ -129,38 +161,6 @@ const VideoUpload: React.FC<VideoUploadProps> = ({
     disabled: disabled || videos.length >= maxVideos,
     multiple: true
   });
-
-  // Mettre à jour le statut d'une vidéo
-  const updateVideoStatus = useCallback((
-    id: string, 
-    status: VideoFile['status'], 
-    progress: number, 
-    error?: string
-  ) => {
-    setVideos(prev => prev.map(video => 
-      video.id === id 
-        ? { ...video, status, progress, error }
-        : video
-    ));
-  }, []);
-
-  // Mettre à jour la miniature et durée
-  const updateVideoThumbnail = useCallback((id: string, thumbnail: string, duration?: number) => {
-    setVideos(prev => prev.map(video => 
-      video.id === id 
-        ? { ...video, thumbnail, duration }
-        : video
-    ));
-  }, []);
-
-  // Mettre à jour l'URL de la vidéo
-  const updateVideoUrl = useCallback((id: string, url: string) => {
-    setVideos(prev => prev.map(video => 
-      video.id === id 
-        ? { ...video, url }
-        : video
-    ));
-  }, []);
 
   // Supprimer une vidéo
   const removeVideo = async (id: string) => {

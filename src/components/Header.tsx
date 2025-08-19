@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Menu, User, LogIn, UserPlus, Settings, LogOut, Plus } from "lucide-react";
+import { Heart, Menu, User, LogIn, UserPlus, Settings, LogOut, Plus, Home } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -22,8 +22,8 @@ const Header = () => {
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-hero-gradient rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">L</span>
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-green-500 rounded-lg flex items-center justify-center shadow-lg">
+            <Home className="h-5 w-5 text-white" />
           </div>
           <span className="text-xl font-bold text-foreground">Lokali</span>
         </Link>
