@@ -32,6 +32,7 @@ interface DbBooking {
 }
 
 export class BookingService {
+
   // Créer une nouvelle réservation
   static async createBooking(bookingData: {
     propertyId: string;

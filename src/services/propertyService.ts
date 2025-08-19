@@ -85,8 +85,38 @@ interface PropertyUpdateData {
 }
 
 export class PropertyService {
+  // Méthode pour obtenir les propriétés d'un propriétaire
+  static async getOwnerProperties(ownerId: string): Promise<Property[]> {
+    try {
+      const { data, error } = await supabase
+        .from('properties')
+        .select(`
+          *,
+          users!properties_owner_id_fkey (
+            id,
+            name,
+            phone,
+            email,
+            verified
+          )
+        `)
+        .eq('owner_id', ownerId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erreur récupération propriétés propriétaire:', error);
+        throw new Error(error.message);
+      }
+
+      return data?.map(this.transformProperty) || [];
+    } catch (error) {
+      console.error('Erreur service propriétés propriétaire:', error);
+      throw error;
+    }
+  }
+
   // Rechercher des propriétés avec filtres
-  static async searchProperties(filters: SearchFilters = {}) {
+  static async searchProperties(filters: SearchFilters = {}): Promise<Property[]> {
     let query = supabase
       .from('properties')
       .select(`
