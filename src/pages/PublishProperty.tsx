@@ -12,6 +12,7 @@ import { Upload, X, Plus, MapPin, Home, Euro, Camera, Check } from 'lucide-react
 import { BENIN_CITIES, AMENITIES } from '@/constants/benin';
 import { PropertyType } from '@/types/property';
 import ImageUpload, { UploadedImage } from '@/components/ui/ImageUpload';
+import AddressAutocomplete from '@/components/AddressAutocomplete';
 import Header from '@/components/Header';
 
 const PublishProperty = () => {
@@ -22,6 +23,7 @@ const PublishProperty = () => {
     description: '',
     location: '',
     city: '',
+    coordinates: undefined as { lat: number; lng: number } | undefined,
     price: '',
     bedrooms: '',
     bathrooms: '',
@@ -44,6 +46,14 @@ const PublishProperty = () => {
 
   const handleInputChange = (field: string, value: string | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleAddressChange = (address: string, coordinates?: { lat: number; lng: number }) => {
+    setFormData(prev => ({
+      ...prev,
+      location: address,
+      coordinates: coordinates
+    }));
   };
 
   const handleAmenityToggle = (amenity: string) => {
@@ -207,12 +217,18 @@ const PublishProperty = () => {
 
                   <div className="md:col-span-2">
                     <Label htmlFor="location">Adresse/Quartier *</Label>
-                    <Input
-                      id="location"
-                      placeholder="Ex: Fidjrossè, près du marché"
+                    <AddressAutocomplete
                       value={formData.location}
-                      onChange={(e) => handleInputChange('location', e.target.value)}
+                      onChange={handleAddressChange}
+                      placeholder="Ex: Fidjrossè, près du marché, Cotonou"
+                      className="w-full"
                     />
+                    {formData.coordinates && (
+                      <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        Coordonnées GPS détectées ({formData.coordinates.lat.toFixed(4)}, {formData.coordinates.lng.toFixed(4)})
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -350,11 +366,12 @@ const PublishProperty = () => {
             {currentStep === 4 && (
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold">Photos de votre bien</h2>
-                
                 <ImageUpload
+                  images={formData.images}
                   onImagesChange={handleImagesChange}
                   maxImages={10}
-                  folder="properties"
+                  propertyId={propertyType}
+                  enableRealUpload={false}
                   className="w-full"
                 />
 

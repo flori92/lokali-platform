@@ -2,320 +2,271 @@ import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { X, Upload, Image as ImageIcon, Loader2, AlertCircle } from 'lucide-react';
-import { StorageService, UploadResult } from '@/services/storageService';
+import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Upload, X, Image as ImageIcon, AlertCircle, Loader2, Check } from 'lucide-react';
+import { ImageUploadService, ImageUploadResult, ImageUploadProgress } from '@/services/imageUploadService';
 
 export interface UploadedImage {
   id: string;
   url: string;
-  file: File;
-  status: 'uploading' | 'success' | 'error';
-  progress: number;
+  file?: File;
+  preview: string;
+  uploaded?: boolean;
+  path?: string;
+  size?: number;
+  status?: 'pending' | 'uploading' | 'uploaded' | 'error';
+  progress?: number;
   error?: string;
 }
 
 interface ImageUploadProps {
+  images: UploadedImage[];
   onImagesChange: (images: UploadedImage[]) => void;
   maxImages?: number;
-  maxSizeBytes?: number;
-  allowedTypes?: string[];
-  folder?: string;
+  maxSizePerImage?: number; // en MB
+  propertyId?: string;
+  enableRealUpload?: boolean;
   className?: string;
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
+  images,
   onImagesChange,
   maxImages = 10,
-  maxSizeBytes = 5 * 1024 * 1024, // 5MB
-  allowedTypes = ['image/jpeg', 'image/png', 'image/webp'],
-  folder = 'properties',
+  maxSizePerImage = 10,
+  propertyId,
+  enableRealUpload = false,
   className = ''
 }) => {
-  const [images, setImages] = useState<UploadedImage[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string>('');
-
-  const updateImages = useCallback((newImages: UploadedImage[]) => {
-    setImages(newImages);
-    onImagesChange(newImages);
-  }, [onImagesChange]);
-
-  const uploadFile = useCallback(async (file: File): Promise<UploadResult> => {
-    return StorageService.uploadImage(file, {
-      folder,
-      maxSizeBytes,
-      allowedTypes,
-      compress: true,
-      maxWidth: 1920,
-      maxHeight: 1080
-    });
-  }, [folder, maxSizeBytes, allowedTypes]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<ImageUploadProgress | null>(null);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    setError('');
-    
-    // Vérifier le nombre maximum d'images
     if (images.length + acceptedFiles.length > maxImages) {
-      setError(`Maximum ${maxImages} images autorisées`);
+      alert(`Vous ne pouvez télécharger que ${maxImages} images maximum`);
       return;
     }
 
-    setUploading(true);
-
-    // Créer les objets image initiaux
+    // Créer les objets image avec preview
     const newImages: UploadedImage[] = acceptedFiles.map(file => ({
-      id: `${Date.now()}_${Math.random().toString(36).substring(2)}`,
-      url: '',
+      id: Math.random().toString(36).substring(2, 9),
+      url: URL.createObjectURL(file),
       file,
-      status: 'uploading' as const,
+      preview: URL.createObjectURL(file),
+      status: 'pending',
       progress: 0
     }));
 
-    // Ajouter les nouvelles images à la liste
+    // Ajouter les images à la liste
     const updatedImages = [...images, ...newImages];
-    updateImages(updatedImages);
+    onImagesChange(updatedImages);
 
-    // Upload des fichiers
-    for (let i = 0; i < newImages.length; i++) {
-      const image = newImages[i];
+    // Si l'upload réel est activé, uploader vers Supabase
+    if (enableRealUpload) {
+      setIsUploading(true);
       
-      try {
-        // Simuler la progression
-        const progressInterval = setInterval(() => {
-          const currentImages = [...updatedImages];
-          const imageIndex = currentImages.findIndex(img => img.id === image.id);
-          if (imageIndex !== -1 && currentImages[imageIndex].progress < 90) {
-            currentImages[imageIndex].progress += 10;
-            updateImages(currentImages);
-          }
-        }, 200);
+      for (let i = 0; i < newImages.length; i++) {
+        const imageToUpload = newImages[i];
+        const imageIndex = images.length + i;
 
-        // Upload réel
-        const result = await uploadFile(image.file);
-        clearInterval(progressInterval);
+        try {
+          // Mettre à jour le statut à "uploading"
+          const uploadingImages = updatedImages.map((img, idx) => 
+            idx === imageIndex ? { ...img, status: 'uploading' as const, progress: 0 } : img
+          );
+          onImagesChange(uploadingImages);
 
-        // Mettre à jour le statut de l'image
-        const currentImages = [...updatedImages];
-        const imageIndex = currentImages.findIndex(img => img.id === image.id);
-        
-        if (imageIndex !== -1) {
-          if (result.success && result.url) {
-            currentImages[imageIndex] = {
-              ...currentImages[imageIndex],
+          // Upload vers Supabase
+          const result = await ImageUploadService.uploadImage(
+            imageToUpload.file!,
+            propertyId,
+            (progress) => {
+              setUploadProgress(progress);
+              
+              // Mettre à jour le progrès de l'image
+              const progressImages = uploadingImages.map((img, idx) => 
+                idx === imageIndex ? { ...img, progress: progress.progress } : img
+              );
+              onImagesChange(progressImages);
+            }
+          );
+
+          // Marquer comme uploadé avec succès
+          const successImages = updatedImages.map((img, idx) => 
+            idx === imageIndex ? {
+              ...img,
+              status: 'uploaded' as const,
+              progress: 100,
               url: result.url,
-              status: 'success',
-              progress: 100
-            };
-          } else {
-            currentImages[imageIndex] = {
-              ...currentImages[imageIndex],
-              status: 'error',
-              progress: 0,
-              error: result.error || 'Erreur d\'upload'
-            };
-          }
-          updateImages(currentImages);
-        }
+              path: result.path,
+              size: result.size,
+              uploaded: true
+            } : img
+          );
+          onImagesChange(successImages);
 
-      } catch (error) {
-        const currentImages = [...updatedImages];
-        const imageIndex = currentImages.findIndex(img => img.id === image.id);
-        
-        if (imageIndex !== -1) {
-          currentImages[imageIndex] = {
-            ...currentImages[imageIndex],
-            status: 'error',
-            progress: 0,
-            error: error instanceof Error ? error.message : 'Erreur d\'upload'
-          };
-          updateImages(currentImages);
+        } catch (error) {
+          // Marquer comme erreur
+          const errorImages = updatedImages.map((img, idx) => 
+            idx === imageIndex ? {
+              ...img,
+              status: 'error' as const,
+              error: error instanceof Error ? error.message : 'Erreur upload'
+            } : img
+          );
+          onImagesChange(errorImages);
         }
+      }
+
+      setIsUploading(false);
+      setUploadProgress(null);
+    }
+  }, [images, maxImages, onImagesChange, enableRealUpload, propertyId]);
+
+  const removeImage = async (imageId: string) => {
+    const imageToRemove = images.find(img => img.id === imageId);
+    
+    // Si l'image a été uploadée sur Supabase, la supprimer
+    if (imageToRemove?.uploaded && imageToRemove.path && enableRealUpload) {
+      try {
+        await ImageUploadService.deleteImage(imageToRemove.path);
+      } catch (error) {
+        console.error('Erreur suppression image:', error);
       }
     }
 
-    setUploading(false);
-  }, [images, maxImages, updateImages, uploadFile]);
-
-  const removeImage = (imageId: string) => {
-    const imageToRemove = images.find(img => img.id === imageId);
-    
-    // Supprimer de Supabase si l'image a été uploadée
-    if (imageToRemove?.url && imageToRemove.status === 'success') {
-      StorageService.deleteImage(imageToRemove.url).catch(console.error);
+    // Révoquer l'URL de preview si c'est un blob local
+    if (imageToRemove?.preview && imageToRemove.preview.startsWith('blob:')) {
+      URL.revokeObjectURL(imageToRemove.preview);
     }
 
     const filteredImages = images.filter(img => img.id !== imageId);
-    updateImages(filteredImages);
-  };
-
-  const retryUpload = async (imageId: string) => {
-    const image = images.find(img => img.id === imageId);
-    if (!image) return;
-
-    const updatedImages = images.map(img => 
-      img.id === imageId 
-        ? { ...img, status: 'uploading' as const, progress: 0, error: undefined }
-        : img
-    );
-    updateImages(updatedImages);
-
-    try {
-      const result = await uploadFile(image.file);
-      
-      const finalImages = updatedImages.map(img => 
-        img.id === imageId 
-          ? {
-              ...img,
-              url: result.success ? result.url || '' : '',
-              status: result.success ? 'success' as const : 'error' as const,
-              progress: result.success ? 100 : 0,
-              error: result.success ? undefined : result.error
-            }
-          : img
-      );
-      updateImages(finalImages);
-
-    } catch (error) {
-      const errorImages = updatedImages.map(img => 
-        img.id === imageId 
-          ? {
-              ...img,
-              status: 'error' as const,
-              progress: 0,
-              error: error instanceof Error ? error.message : 'Erreur d\'upload'
-            }
-          : img
-      );
-      updateImages(errorImages);
-    }
+    onImagesChange(filteredImages);
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/*': allowedTypes.map(type => `.${type.split('/')[1]}`)
+      'image/*': ['.jpeg', '.jpg', '.png', '.webp']
     },
-    maxSize: maxSizeBytes,
-    disabled: uploading || images.length >= maxImages
+    maxSize: maxSizePerImage * 1024 * 1024,
+    disabled: isUploading || images.length >= maxImages
   });
 
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Zone de drop */}
-      <Card>
-        <CardContent className="p-6">
-          <div
-            {...getRootProps()}
-            className={`
-              border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
-              ${isDragActive ? 'border-primary bg-primary/5' : 'border-gray-300 hover:border-primary'}
-              ${uploading || images.length >= maxImages ? 'opacity-50 cursor-not-allowed' : ''}
-            `}
-          >
-            <input {...getInputProps()} />
-            
-            <div className="flex flex-col items-center space-y-4">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                <Upload className="w-6 h-6 text-gray-600" />
-              </div>
-              
-              <div>
-                <p className="text-lg font-medium text-gray-900">
-                  {isDragActive ? 'Déposez vos images ici' : 'Glissez vos images ou cliquez pour sélectionner'}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  {allowedTypes.join(', ')} • Max {Math.round(maxSizeBytes / 1024 / 1024)}MB par image • {maxImages} images max
-                </p>
-              </div>
-
-              {images.length < maxImages && (
-                <Button type="button" variant="outline" disabled={uploading}>
-                  <ImageIcon className="w-4 h-4 mr-2" />
-                  Sélectionner des images
-                </Button>
-              )}
-            </div>
+      <Card 
+        {...getRootProps()} 
+        className={`border-2 border-dashed transition-colors cursor-pointer hover:border-primary/50 ${
+          isDragActive ? 'border-primary bg-primary/5' : 'border-gray-300'
+        } ${isUploading ? 'pointer-events-none opacity-50' : ''}`}
+      >
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <input {...getInputProps()} />
+          
+          {isUploading ? (
+            <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
+          ) : (
+            <Upload className="h-12 w-12 text-gray-400 mb-4" />
+          )}
+          
+          <div className="text-center">
+            <p className="text-lg font-medium text-gray-900 mb-2">
+              {isUploading ? 'Upload en cours...' : 'Glissez vos images ici'}
+            </p>
+            <p className="text-sm text-gray-600 mb-4">
+              ou cliquez pour sélectionner des fichiers
+            </p>
+            <p className="text-xs text-gray-500">
+              Formats acceptés: JPEG, PNG, WebP • Max {maxSizePerImage}MB par image • {maxImages} images max
+            </p>
           </div>
+
+          {!isUploading && (
+            <Button variant="outline" className="mt-4" disabled={images.length >= maxImages}>
+              <ImageIcon className="h-4 w-4 mr-2" />
+              Choisir des images
+            </Button>
+          )}
         </CardContent>
       </Card>
 
-      {/* Messages d'erreur */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
+      {/* Barre de progression globale */}
+      {uploadProgress && (
+        <Alert>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <AlertDescription>
+            {uploadProgress.message}
+            <Progress value={uploadProgress.progress} className="mt-2" />
+          </AlertDescription>
         </Alert>
       )}
 
-      {/* Liste des images */}
+      {/* Grille des images */}
       {images.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {images.map((image) => (
-            <Card key={image.id} className="relative overflow-hidden">
-              <CardContent className="p-2">
-                <div className="aspect-square relative bg-gray-100 rounded-lg overflow-hidden">
-                  {/* Preview de l'image */}
-                  <img
-                    src={image.url || URL.createObjectURL(image.file)}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
-
-                  {/* Overlay de statut */}
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    {image.status === 'uploading' && (
-                      <div className="text-center text-white">
-                        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-                        <Progress value={image.progress} className="w-16 h-1" />
-                      </div>
-                    )}
-                    
-                    {image.status === 'success' && (
-                      <Badge variant="secondary" className="bg-green-500 text-white">
-                        ✓ Uploadée
-                      </Badge>
-                    )}
-                    
-                    {image.status === 'error' && (
-                      <div className="text-center">
-                        <Badge variant="destructive" className="mb-2">
-                          Erreur
-                        </Badge>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => retryUpload(image.id)}
-                          className="text-xs"
-                        >
-                          Réessayer
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Bouton de suppression */}
+          {images.map((image, index) => (
+            <Card key={image.id} className="relative group overflow-hidden">
+              <div className="aspect-square relative">
+                <img
+                  src={image.preview || image.url}
+                  alt={`Upload ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                
+                {/* Overlay avec statut */}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <Button
-                    size="sm"
                     variant="destructive"
-                    className="absolute top-1 right-1 w-6 h-6 p-0"
+                    size="sm"
                     onClick={() => removeImage(image.id)}
+                    disabled={image.status === 'uploading'}
                   >
-                    <X className="w-3 h-3" />
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
 
-                {/* Nom du fichier et erreur */}
-                <div className="mt-2">
-                  <p className="text-xs text-gray-600 truncate">
-                    {image.file.name}
-                  </p>
+                {/* Badge de statut */}
+                <div className="absolute top-2 right-2">
+                  {image.status === 'uploading' && (
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      {image.progress}%
+                    </Badge>
+                  )}
+                  {image.status === 'uploaded' && (
+                    <Badge variant="secondary" className="bg-green-100 text-green-800">
+                      <Check className="h-3 w-3 mr-1" />
+                      Uploadé
+                    </Badge>
+                  )}
+                  {image.status === 'error' && (
+                    <Badge variant="destructive">
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      Erreur
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Barre de progression individuelle */}
+                {image.status === 'uploading' && image.progress !== undefined && (
+                  <div className="absolute bottom-0 left-0 right-0">
+                    <Progress value={image.progress} className="h-2" />
+                  </div>
+                )}
+              </div>
+
+              {/* Informations de l'image */}
+              <CardContent className="p-3">
+                <div className="text-xs text-gray-600">
+                  {image.size && (
+                    <p>Taille: {(image.size / 1024 / 1024).toFixed(1)} MB</p>
+                  )}
                   {image.error && (
-                    <p className="text-xs text-red-600 mt-1">
-                      {image.error}
-                    </p>
+                    <p className="text-red-600 mt-1">{image.error}</p>
                   )}
                 </div>
               </CardContent>
@@ -324,16 +275,22 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         </div>
       )}
 
-      {/* Résumé */}
-      {images.length > 0 && (
-        <div className="flex justify-between items-center text-sm text-gray-600">
-          <span>{images.length} / {maxImages} images</span>
-          <span>
-            {images.filter(img => img.status === 'success').length} uploadées, {' '}
-            {images.filter(img => img.status === 'error').length} erreurs
+      {/* Informations */}
+      <div className="flex items-center justify-between text-sm text-gray-600">
+        <span>
+          {images.length} / {maxImages} images
+        </span>
+        {enableRealUpload && (
+          <span className="flex items-center gap-1">
+            {images.filter(img => img.status === 'uploaded').length > 0 && (
+              <>
+                <Check className="h-4 w-4 text-green-600" />
+                {images.filter(img => img.status === 'uploaded').length} uploadées
+              </>
+            )}
           </span>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

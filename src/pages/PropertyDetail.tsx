@@ -3,13 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Star, MapPin, Users, Bed, Bath, Wifi, Car, Coffee, Tv, Phone, Mail } from 'lucide-react';
+import { Star, MapPin, Users, Bed, Bath, Wifi, Car, Coffee, Tv, Phone, Mail, MessageCircle } from 'lucide-react';
 import Header from '@/components/Header';
 import AvailabilityCalendar from '@/components/AvailabilityCalendar';
+import MessageSystem from '@/components/MessageSystem';
+import { useAuth } from '@/contexts/AuthContext';
 
 const PropertyDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [showMessageSystem, setShowMessageSystem] = useState(false);
 
   // Mock data - remplacer par un appel API réel
   const property = {
@@ -165,14 +169,47 @@ const PropertyDetail = () => {
                       <span className="text-sm">{property.owner.email}</span>
                     </div>
                   </div>
-                  <Button variant="outline" className="w-full mt-3">
-                    Envoyer un message
+                  <Button 
+                    variant="outline" 
+                    className="w-full mt-3"
+                    onClick={() => setShowMessageSystem(true)}
+                    disabled={!user}
+                  >
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    {user ? 'Envoyer un message' : 'Connectez-vous pour contacter'}
                   </Button>
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
+
+        {/* Modal du système de messagerie */}
+        {showMessageSystem && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg w-full max-w-4xl h-[80vh] relative">
+              <div className="absolute top-4 right-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowMessageSystem(false)}
+                >
+                  ✕
+                </Button>
+              </div>
+              <div className="p-6 h-full">
+                <h2 className="text-xl font-semibold mb-4">
+                  Contacter le propriétaire - {property.title}
+                </h2>
+                <MessageSystem
+                  propertyId={property.id}
+                  recipientId="owner-mock-id" // À remplacer par l'ID réel du propriétaire
+                  className="h-[calc(100%-60px)]"
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
