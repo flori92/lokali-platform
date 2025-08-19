@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import './App.css';
 
 // Import des pages principales
@@ -195,6 +195,15 @@ const SimpleHeader = () => (
 );
 
 function App() {
+  // Gestion du routage GitHub Pages SPA
+  useEffect(() => {
+    const redirect = sessionStorage.redirect;
+    delete sessionStorage.redirect;
+    if (redirect && redirect !== location.href) {
+      history.replaceState(null, '', redirect);
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Router>

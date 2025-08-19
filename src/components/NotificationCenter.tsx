@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Bell, X, Check, AlertCircle, Info, CheckCircle, XCircle, Calendar, MessageSquare, Home, BellOff, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
-import { Bell, BellOff, Settings, Check, X, MessageSquare, Calendar, Home, AlertCircle } from 'lucide-react';
+import { useAccessibility } from '@/hooks/useAccessibility';
 import { pushNotificationService } from '@/services/pushNotificationService';
 import { useA11y } from '@/components/AccessibilityProvider';
 
@@ -48,10 +50,17 @@ export const NotificationCenter: React.FC = () => {
 
     // Charger les notifications depuis le localStorage
     loadNotifications();
-    
-    // Calculer le nombre de non lues
-    updateUnreadCount();
+  }, []);
+
+  const updateUnreadCount = useCallback(() => {
+    const count = notifications.filter(n => !n.read).length;
+    setUnreadCount(count);
   }, [notifications]);
+
+  useEffect(() => {
+    // Calculer le nombre de non lues quand les notifications changent
+    updateUnreadCount();
+  }, [notifications, updateUnreadCount]);
 
   const loadNotifications = () => {
     try {
@@ -76,11 +85,6 @@ export const NotificationCenter: React.FC = () => {
     } catch (error) {
       console.error('Erreur sauvegarde notifications:', error);
     }
-  };
-
-  const updateUnreadCount = () => {
-    const count = notifications.filter(n => !n.read).length;
-    setUnreadCount(count);
   };
 
   const handleSubscribe = async () => {
