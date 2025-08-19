@@ -63,6 +63,18 @@ export const COMMON_AMENITIES = [
   'Carreaux'
 ];
 
+// Utilitaire minimal pour générer un id stable à partir d'un libellé
+const toId = (name: string) =>
+  name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+// Export attendu par PublishProperty.tsx: liste d'objets { id, name }
+export const AMENITIES = COMMON_AMENITIES.map((name) => ({ id: toId(name), name }));
+
 // Prix de référence basés sur le marché béninois (en FCFA) - Source: GESCIA BENIN
 export const PRICE_RANGES = {
   guestHouse: {
