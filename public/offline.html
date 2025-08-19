@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mode Hors Ligne - Lokali</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .offline-container {
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 32px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            opacity: 0.9;
+        }
+        
+        .features {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 24px 0;
+            text-align: left;
+        }
+        
+        .features h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .features ul {
+            list-style: none;
+        }
+        
+        .features li {
+            padding: 8px 0;
+            position: relative;
+            padding-left: 24px;
+        }
+        
+        .features li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4ade80;
+            font-weight: bold;
+        }
+        
+        .retry-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .retry-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+        
+        .online {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        
+        .offline {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="logo">🏠</div>
+        <h1>Mode Hors Ligne</h1>
+        <p>Vous n'êtes pas connecté à Internet, mais vous pouvez toujours consulter certaines fonctionnalités de Lokali.</p>
+        
+        <div class="features">
+            <h3>Fonctionnalités disponibles hors ligne :</h3>
+            <ul>
+                <li>Consulter les propriétés récemment visitées</li>
+                <li>Voir vos favoris sauvegardés</li>
+                <li>Accéder aux informations de contact</li>
+                <li>Parcourir les images mises en cache</li>
+            </ul>
+        </div>
+        
+        <button class="retry-btn" onclick="window.location.reload()">
+            Réessayer la connexion
+        </button>
+        
+        <div class="status" id="connection-status">
+            <span id="status-text">Vérification de la connexion...</span>
+        </div>
+    </div>
+
+    <script>
+        // Vérifier la connexion
+        function updateConnectionStatus() {
+            const statusEl = document.getElementById('connection-status');
+            const textEl = document.getElementById('status-text');
+            
+            if (navigator.onLine) {
+                statusEl.className = 'status online';
+                textEl.textContent = '✓ Connexion rétablie ! Cliquez sur "Réessayer" pour recharger.';
+            } else {
+                statusEl.className = 'status offline';
+                textEl.textContent = '✗ Aucune connexion Internet détectée.';
+            }
+        }
+        
+        // Écouter les changements de connexion
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+        
+        // Vérification initiale
+        updateConnectionStatus();
+        
+        // Vérification périodique
+        setInterval(updateConnectionStatus, 5000);
+        
+        // Auto-reload quand la connexion revient
+        window.addEventListener('online', () => {
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
