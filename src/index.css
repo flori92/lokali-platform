@@ -116,3 +116,13 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .bg-hero-gradient {
+    background: var(--hero-gradient);
+  }
+
+  .bg-gradient-overlay {
+    background: var(--gradient-overlay);
+  }
+}
