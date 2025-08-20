@@ -1,13 +1,16 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Suspense, lazy, useEffect } from 'react';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { AccessibilityProvider } from '@/components/AccessibilityProvider';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import './App.css';
 
-// Import des pages principales
-const Index = lazy(() => import('@/pages/Index'));
-const PublishProperty = lazy(() => import('@/pages/PublishProperty'));
-const Login = lazy(() => import('@/pages/Login'));
-const Register = lazy(() => import('@/pages/Register'));
+// Import des pages principales avec gestion d'erreur
+const Index = lazy(() => import('@/pages/Index').catch(() => ({ default: () => <div>Erreur de chargement de la page d'accueil</div> })));
+const PublishProperty = lazy(() => import('@/pages/PublishProperty').catch(() => ({ default: () => <div>Erreur de chargement de la page de publication</div> })));
+const Login = lazy(() => import('@/pages/Login').catch(() => ({ default: () => <div>Erreur de chargement de la page de connexion</div> })));
+const Register = lazy(() => import('@/pages/Register').catch(() => ({ default: () => <div>Erreur de chargement de la page d'inscription</div> })));
 
 // Version simplifiée de PublishProperty pour éviter les erreurs
 const SimplePublishProperty = () => (
@@ -197,7 +200,7 @@ const SimpleHeader = () => (
 function App() {
   // Gestion du routage GitHub Pages SPA
   useEffect(() => {
-    const redirect = sessionStorage.redirect;
+    const { redirect } = sessionStorage;
     delete sessionStorage.redirect;
     if (redirect && redirect !== location.href) {
       history.replaceState(null, '', redirect);
@@ -205,22 +208,28 @@ function App() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <div className="min-h-screen bg-background">
-          <SimpleHeader />
-          <Suspense fallback={<LoadingSpinner />}>
-            <Routes>
-              <Route path="/" element={<SimpleIndex />} />
-              <Route path="/publish" element={<PublishProperty />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="*" element={<SimpleIndex />} />
-            </Routes>
-          </Suspense>
-        </div>
-      </Router>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <AccessibilityProvider>
+        <AuthProvider>
+          <QueryClientProvider client={queryClient}>
+            <Router basename={import.meta.env.PROD ? '/stay-local-rent-easy' : ''}>
+              <div className="min-h-screen bg-background">
+                <SimpleHeader />
+                <Suspense fallback={<LoadingSpinner />}>
+                  <Routes>
+                    <Route path="/" element={<SimpleIndex />} />
+                    <Route path="/publish" element={<PublishProperty />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="*" element={<SimpleIndex />} />
+                  </Routes>
+                </Suspense>
+              </div>
+            </Router>
+          </QueryClientProvider>
+        </AuthProvider>
+      </AccessibilityProvider>
+    </ErrorBoundary>
   );
 }
 

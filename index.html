@@ -19,16 +19,10 @@
     <meta name="twitter:image" content="/placeholder.svg" />
     <!-- Define assets path helper for Vite experimental.renderBuiltUrl -->
     <script>
-      // Calcule dynamiquement le préfixe des assets pour GitHub Pages
-      // Exemple: https://flori92.github.io/lokali-platform/ => base "/lokali-platform/"
+      // Configuration des assets pour GitHub Pages
       (function() {
-        var base = 
-          (window.location.pathname.endsWith('/')
-            ? window.location.pathname
-            : window.location.pathname.replace(/\/[^/]*$/, '/')) || '/';
-        // Enforce leading and trailing slash
-        if (!base.startsWith('/')) base = '/' + base;
-        if (!base.endsWith('/')) base = base + '/';
+        var isGitHubPages = window.location.hostname === 'flori92.github.io';
+        var base = isGitHubPages ? '/stay-local-rent-easy/' : '/';
         window.__assetsPath = function(p) { return base + p.replace(/^\//, ''); };
       })();
     </script>
