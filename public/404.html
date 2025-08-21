@@ -5,17 +5,18 @@
   <title>Page Not Found - Lokali</title>
   <script type="text/javascript">
     // Single Page Apps for GitHub Pages
-    // Configuration pour stay-local-rent-easy
+    // Configuration pour lokali-platform
     var pathSegmentsToKeep = 1;
 
     var l = window.location;
-    l.replace(
-      l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-      l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
-      l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
-      (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-      l.hash
-    );
+    // Base du projet GitHub Pages (ex: https://user.github.io/lokali-platform/)
+    var base = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+      l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/';
+
+    // Sauvegarde l'URL complète avant redirection pour que l'app restaure l'état côté client
+    try { sessionStorage.redirect = l.href; } catch (e) {}
+    // Redirige vers la base; l'app réécrira ensuite l'URL d'origine
+    l.replace(base);
   </script>
 </head>
 <body>

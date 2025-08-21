@@ -48,7 +48,7 @@ npm run deploy
 
 Une fois déployé, votre application sera accessible à:
 ```
-https://[votre-username].github.io/stay-local-rent-easy/
+https://[votre-username].github.io/lokali-platform/
 ```
 
 ### 7. Configuration Domaine Personnalisé (Optionnel)

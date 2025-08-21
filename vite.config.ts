@@ -7,7 +7,7 @@ import compression from 'vite-plugin-compression'
 // https://vitejs.dev/config/
 export default defineConfig({
   // Configuration pour GitHub Pages
-  base: process.env.NODE_ENV === 'production' ? '/stay-local-rent-easy/' : '/',
+  base: process.env.NODE_ENV === 'production' ? '/lokali-platform/' : '/',
   plugins: [
     react(),
     // Analyse du bundle
@@ -37,57 +37,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Vendor chunks optimisés
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'react-core';
-            }
-            if (id.includes('react-router')) {
-              return 'react-router';
-            }
-            if (id.includes('react-query') || id.includes('@tanstack')) {
-              return 'react-query';
-            }
-            if (id.includes('lucide-react')) {
-              return 'icons';
-            }
-            if (id.includes('leaflet') || id.includes('react-leaflet')) {
-              return 'maps';
-            }
-            if (id.includes('date-fns')) {
-              return 'date-utils';
-            }
-            if (id.includes('supabase')) {
-              return 'supabase';
-            }
-            if (id.includes('react-dropzone') || id.includes('react-helmet')) {
-              return 'ui-libs';
-            }
-            return 'vendor';
-          }
-          
-          // Feature chunks optimisés
-          if (id.includes('MessageSystem') || id.includes('messageService') || id.includes('NotificationCenter')) {
-            return 'messaging';
-          }
-          if (id.includes('MediaGallery') || id.includes('VideoUpload') || id.includes('videoService')) {
-            return 'media';
-          }
-          if (id.includes('Dashboard') || id.includes('revenueService') || id.includes('analytics')) {
-            return 'dashboard';
-          }
-          if (id.includes('PWA') || id.includes('pushNotification') || id.includes('serviceWorker')) {
-            return 'pwa';
-          }
-          if (id.includes('SEO') || id.includes('sitemap') || id.includes('performance')) {
-            return 'seo-performance';
-          }
-          if (id.includes('Accessibility') || id.includes('useAccessibility')) {
-            return 'accessibility';
-          }
-          if (id.includes('Map') || id.includes('geocoding') || id.includes('AddressAutocomplete')) {
-            return 'geolocation';
-          }
+          // Simplification pour éviter les cycles entre chunks (vendor/react-core)
+          // Tous les modules node_modules vont dans 'vendor'
+          if (id.includes('node_modules')) return 'vendor';
         }
       }
     },

@@ -212,7 +212,7 @@ function App() {
       <AccessibilityProvider>
         <AuthProvider>
           <QueryClientProvider client={queryClient}>
-            <Router basename={import.meta.env.PROD ? '/stay-local-rent-easy' : ''}>
+            <Router basename={import.meta.env.PROD ? '/lokali-platform' : ''}>
               <div className="min-h-screen bg-background">
                 <SimpleHeader />
                 <Suspense fallback={<LoadingSpinner />}>
