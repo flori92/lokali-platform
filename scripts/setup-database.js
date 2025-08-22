@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 
-const { Client } = require('pg');
-const fs = require('fs');
-const path = require('path');
+import pg from 'pg';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const { Client } = pg;
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Configuration de connexion PostgreSQL
 const client = new Client({
